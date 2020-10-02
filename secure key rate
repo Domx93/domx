@@ -1,0 +1,140 @@
+#after histograms of correlations
+
+
+import numpy as np
+from collections import defaultdict
+
+#acquisisce gli istrogrammi dai file .txt e crea un dizionario di liste, visionabile con histy["10_HH"] per l'istogramma a dispezione +10 e base HH
+filelist=["HH", "HV", "VH", "VV", "DD", "DA", "AD", "AA"] 
+histx= defaultdict(list)
+histy=defaultdict(list)
+for i in range (-170,180,10):
+    for j in range(8):
+        file = open("cutted_histograms/%d_%s.txt"% (i,filelist[j]), "r")
+        lines=file.readlines()[1:]
+        for el in lines:
+            histx["%d_%s"% (i,filelist[j])].append(int(el.split(' ')[0]))
+            histy["%d_%s"% (i,filelist[j])].append(int(el.split(' ')[1]))
+        file.close()
+        
+        
+        
+  from scipy.optimize import curve_fit
+fit=defaultdict()
+fitcov=defaultdict()
+maxima=["HH","VV","DD","AA"]
+def gaussian(x, a, x0, sigma):
+    return a*np.exp(-(x-x0)**2/(2*sigma**2))
+for i in range (-170,180,10):
+    for j in range (4):
+        fit["%d_%s"%(i,maxima[j])],fitcov["%d_%s"%(i,maxima[j])]=curve_fit(gaussian,histx["%d_%s"%(i,maxima[j])],histy["%d_%s"%(i,maxima[j])])
+        
+        
+        
+        
+  from scipy.optimize import curve_fit
+fit2=defaultdict()
+fitcov2=defaultdict()
+maxima=["HH","VV","DD","AA"]
+def gaussian(x, a, x0, sigma):
+    return a*np.exp(-(x-x0)**2/(2*sigma**2))
+for i in range (-170,180,10):
+    for j in range (4):
+        fit2["%d_%s"%(i,maxima[j])],fitcov2["%d_%s"%(i,maxima[j])]=curve_fit(gaussian,histx["%d_%s"%(i,maxima[j])],histy["%d_%s"%(i,maxima[j])]+np.sqrt(histy["%d_%s"%(i,maxima[j])]))
+        
+        
+        
+        
+from scipy.optimize import curve_fit
+fit3=defaultdict()
+fitcov3=defaultdict()
+maxima=["HH","VV","DD","AA"]
+def gaussian(x, a, x0, sigma):
+    return a*np.exp(-(x-x0)**2/(2*sigma**2))
+for i in range (-170,180,10):
+    for j in range (4):
+        fit3["%d_%s"%(i,maxima[j])],fitcov3["%d_%s"%(i,maxima[j])]=curve_fit(gaussian,histx["%d_%s"%(i,maxima[j])],histy["%d_%s"%(i,maxima[j])]-np.sqrt(histy["%d_%s"%(i,maxima[j])]))
+        
+        
+        
+        
+  fwhm=defaultdict()
+for i in range (-170,180,10):
+    for j in range (4):
+        fwhm["%d_%s"%(i,maxima[j])]=2.355*np.abs(fit["%d_%s"%(i,maxima[j])][2])
+        
+        
+        
+        
+  #definisce il secure key rate, che va massimizzato per trovare la finestra di coincidenza. Lo fa solo per gli HH, salva i valori in skr["10"] 
+def ln2(x):
+    return np.log(x)/np.log(2)
+
+def H2(x):
+    return -x*ln2(x)-(1-x)*ln2(1-x)
+
+def rsec(k):
+    CC=0
+    QBER_numerator=0
+    x=0
+    #CC=normhist["%d_HH"%i][j]+normhist["%d_HV"%i][j]+normhist["%d_VH"%i][j]+normhist["%d_VV"%i][j]+normhist["%d_DD"%i][j]+normhist["%d_DA"%i][j]+normhist["%d_AD"%i][j]+normhist["%d_AA"%i][j]
+    #QBER_numerator=normhist["%d_HV"%i][j]+normhist["%d_VH"%i][j]+normhist["%d_DA"%i][j]+normhist["%d_AD"%i][j]
+    for x in range (k+1):
+        CC=CC+normhist["%d_HH"%i][j+x]+normhist["%d_HV"%i][j+x]+normhist["%d_VH"%i][j+x]+normhist["%d_VV"%i][j+x]+normhist["%d_DD"%i][j+x]+normhist["%d_DA"%i][j+x]+normhist["%d_AD"%i][j+x]+normhist["%d_AA"%i][j+x]
+        QBER_numerator=QBER_numerator+normhist["%d_HV"%i][j+x]+normhist["%d_VH"%i][j+x]+normhist["%d_DA"%i][j+x]+normhist["%d_AD"%i][j+x]
+    QBER=QBER_numerator/CC
+    return CC*(1-2.1*H2(QBER))
+
+
+skr=defaultdict(list)
+cw_start=defaultdict(list)
+cw_end=defaultdict(list)
+
+                
+for i in range (-170,180,10):
+    for j in range (len(1999):       
+        for l in range (len(1999-j):
+                skr["%d"%i].append(rsec(l))
+                cw_start["%d"%i].append(j)
+                cw_end["%d"%i].append(l+j)
+
+
+
+#here it takes to maximum of skr and the corresponding coincindence windows. For the 10ps HH the starting point will be X1["10"], the ending one X2["10"] and the c.w. broadness Tcw["10"]
+from scipy.optimize import minimize
+
+xaxis=np.linspace(-170,170,35)
+MAX=defaultdict(list)
+for i in range (-170,180,10):
+    MAX["%d"%i]=np.argmax(skr["%d"%i])
+    
+MASS=[]
+for i in range (-170,180,10):
+    MASS.append(np.max(skr["%d"%i]))
+
+#nota quindi la finestra di coincidenza, trova le coincidenze.
+basis=["HH", "HV", "VH", "VV", "DD", "DA", "AD", "AA"] 
+COINC=defaultdict(list)
+Tcw=defaultdict(list)
+X1=defaultdict(list)
+X2=defaultdict(list)
+cw=[]
+
+
+for i in range (-170,180,10):
+    X1["%d"%i]=cw_start["%d"%i][MAX["%d"%i]]
+    X2["%d"%i]=cw_end["%d"%i][MAX["%d"%i]]
+    Tcw["%d"%i]=X2["%d"%i]-X1["%d"%i]
+    for j in range(8):
+        COINC["%d_%s"%(i,basis[j])]=sum(normhist["%d_%s"%(i,basis[j])][n] for n in range (X1["%d"%i],X2["%d"%i]+1))#/time["%d_%s"%(i,basis[j])]*10**12
+
+#here I copy the dictionary into an array, it's easier to save it in a txt file        
+for i in range (-170,180,10):
+    cw.append(Tcw["%d"%i])
+#np.savetxt('cw.txt', cw, fmt='%.i')
+
+
+
+
+
+
