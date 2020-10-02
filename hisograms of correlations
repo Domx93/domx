@@ -1,0 +1,419 @@
+import numpy as np
+
+i=-130
+
+HHa=[]
+HHb=[]
+HVa=[]
+HVb=[]
+VHa=[]
+VHb=[]
+VVa=[]
+VVb=[]
+DDa=[]
+DDb=[]
+DAa=[]
+DAb=[]
+ADa=[]
+ADb=[]
+AAa=[]
+AAb=[]
+with open("%d/HH"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            HHa.append(x)
+        else:
+            if (t==b'\x04'):
+                HHb.append(x)
+
+
+with open("%d/HV"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            HVa.append(x)
+        else:
+            if (t==b'\x04'):
+                HVb.append(x)
+
+
+
+with open("%d/VH"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            VHa.append(x)
+        else:
+            if (t==b'\x04'):
+                VHb.append(x)
+                
+                
+with open("%d/VV"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            VVa.append(x)
+        else:
+            if (t==b'\x04'):
+                VVb.append(x)
+
+
+
+with open("%d/DD"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            DDa.append(x)
+        else:
+            if (t==b'\x04'):
+                DDb.append(x)
+
+
+with open("%d/DA"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            DAa.append(x)
+        else:
+            if (t==b'\x04'):
+                DAb.append(x)
+
+
+with open("%d/AD"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            ADa.append(x)
+        else:
+            if (t==b'\x04'):
+                ADb.append(x)
+
+
+with open("%d/AA"%i, "rb") as f:
+    f.seek (0,2)
+    size=f.tell()
+    f.seek(0,0)
+    for k in range(size//16):       
+        f.seek(4,1)
+        t=f.read(1)
+        f.seek(3,1)
+        x=int.from_bytes(f.read(8), byteorder='little')
+        if (t==b'\x02'):
+            AAa.append(x)
+        else:
+            if (t==b'\x04'):
+                AAb.append(x)
+
+
+
+
+
+import IPython
+import time 
+import numpy as np
+import matplotlib.pyplot as plt
+import pandas as pd
+ccwindow = 1
+
+def computehisto_new(arrA,arrB,max_delta_t):
+    arrA = arrA.astype(int)
+    arrB = arrB.astype(int)
+    arr_search = np.searchsorted(arrB, arrA) 
+    arr_diff_search = np.searchsorted(arrB, arrA + max_delta_t)- np.searchsorted(arrB, arrA)
+    list_arr = []
+    for i in range(arr_diff_search.max()+1):
+        arr_diff = arrB[(arr_search+i)%len(arrB)][(arr_diff_search>=i)] - arrA[(arr_diff_search>=i)]
+        list_arr.append(arr_diff[(0<arr_diff)&(arr_diff<max_delta_t)].astype(int))
+   
+    arr_bins = np.bincount(np.concatenate(list_arr))
+    histoNew = np.array([range(len(arr_bins)),arr_bins]).T
+    return np.transpose(np.array([histoNew[:,0],histoNew[:,1]]))
+
+
+
+
+
+delay=32173000
+broad=2000
+
+HHA=pd.array(HHa)+delay
+HHB=pd.array(HHb)
+HVA=pd.array(HVa)+delay
+HVB=pd.array(HVb)
+VHA=pd.array(VHa)+delay
+VHB=pd.array(VHb)
+VVA=pd.array(VVa)+delay
+VVB=pd.array(VVb)
+DDA=pd.array(DDa)+delay
+DDB=pd.array(DDb)
+DAA=pd.array(DAa)+delay
+DAB=pd.array(DAb)
+ADA=pd.array(ADa)+delay
+ADB=pd.array(ADb)
+AAA=pd.array(AAa)+delay
+AAB=pd.array(AAb)
+histoHH=computehisto_new(HHA,HHB,broad)
+histoHV=computehisto_new(HVA,HVB,broad)
+histoVH=computehisto_new(VHA,VHB,broad)
+histoVV=computehisto_new(VVA,VVB,broad)
+histoDD=computehisto_new(DDA,DDB,broad)
+histoDA=computehisto_new(DAA,DAB,broad)
+histoAD=computehisto_new(ADA,ADB,broad)
+histoAA=computehisto_new(AAA,AAB,broad)
+#plt.plot(histo[:,0],histo[:,1])
+np.savetxt('histograms/%d_HH.txt'%i, histoHH, fmt='%.i')
+np.savetxt('histograms/%d_HV.txt'%i, histoHV, fmt='%.i')
+np.savetxt('histograms/%d_VH.txt'%i, histoVH, fmt='%.i')
+np.savetxt('histograms/%d_VV.txt'%i, histoVV, fmt='%.i')
+np.savetxt('histograms/%d_DD.txt'%i, histoDD, fmt='%.i')
+np.savetxt('histograms/%d_DA.txt'%i, histoDA, fmt='%.i')
+np.savetxt('histograms/%d_AD.txt'%i, histoAD, fmt='%.i')
+np.savetxt('histograms/%d_AA.txt'%i, histoAA, fmt='%.i')
+
+
+
+
+
+
+normHH=HHa[len(HHa)-1]-HHa[0]
+normHV=HVa[len(HVa)-1]-HVa[0]
+normVH=VHa[len(VHa)-1]-VHa[0]
+normVV=VVa[len(VVa)-1]-VVa[0]
+normDD=DDa[len(DDa)-1]-DDa[0]
+normDA=DAa[len(DAa)-1]-DAa[0]
+normAD=ADa[len(ADa)-1]-ADa[0]
+normAA=AAa[len(AAa)-1]-AAa[0]
+list=['normHH','normHV','normVH','normVV','normDD','normDA','normAD','normAA']
+norm=[normHH,normHV,normVH,normVV,normDD,normDA,normAD,normAA]
+np.savetxt('normfact/%d.txt'%i, norm, fmt='%.i')
+
+
+
+
+
+singch2HH=len(HHa)
+singch4HH=len(HHb)
+singch2HV=len(HVa)
+singch4HV=len(HVb)
+singch2VH=len(VHa)
+singch4VH=len(VHb)
+singch2VV=len(VVa)
+singch4VV=len(VVb)
+singch2DD=len(DDa)
+singch4DD=len(DDb)
+singch2DA=len(DAa)
+singch4DA=len(DAb)
+singch2AD=len(ADa)
+singch4AD=len(ADb)
+singch2AA=len(AAa)
+singch4AA=len(AAb)
+sing=[singch2HH,singch4HH,singch2HV,singch4HV,singch2VH,singch4VH,singch2VV,singch4VV,singch2DD,singch4DD,singch2DA,singch4DA,singch2AD,singch4AD,singch2AA,singch4AA]
+np.savetxt('singcounts/%d.txt'%i, sing, fmt='%.i')
+
+
+
+
+
+import numpy as np
+from collections import defaultdict
+
+#acquisisce gli istrogrammi dai file .txt e crea un dizionario di liste, visionabile con histy["10_HH"] per l'istogramma a dispezione +10 e base HH
+filelist=["HH", "HV", "VH", "VV", "DD", "DA", "AD", "AA"] 
+
+singch2HH=defaultdict(list)
+singch4HH=defaultdict(list)
+singch2HV=defaultdict(list)
+singch4HV=defaultdict(list)
+singch2VH=defaultdict(list)
+singch4VH=defaultdict(list)
+singch2VV=defaultdict(list)
+singch4VV=defaultdict(list)
+singch2DD=defaultdict(list)
+singch4DD=defaultdict(list)
+singch2DA=defaultdict(list)
+singch4DA=defaultdict(list)
+singch2AD=defaultdict(list)
+singch4AD=defaultdict(list)
+singch2AA=defaultdict(list)
+singch4AA=defaultdict(list)
+for i in range (-170,180,10):
+    file = open("singcounts/%d.txt"% i, "r")
+    singch2HH["%d"%i]=int(file.readline())
+    singch4HH["%d"%i]=int(file.readline())
+    singch2HV["%d"%i]=int(file.readline())
+    singch4HV["%d"%i]=int(file.readline())
+    singch2VH["%d"%i]=int(file.readline())
+    singch4VH["%d"%i]=int(file.readline())
+    singch2VV["%d"%i]=int(file.readline())
+    singch4VV["%d"%i]=int(file.readline())
+    singch2DD["%d"%i]=int(file.readline())
+    singch4DD["%d"%i]=int(file.readline())
+    singch2DA["%d"%i]=int(file.readline())
+    singch4DA["%d"%i]=int(file.readline())
+    singch2AD["%d"%i]=int(file.readline())
+    singch4AD["%d"%i]=int(file.readline())
+    singch2AA["%d"%i]=int(file.readline())
+    singch4AA["%d"%i]=int(file.readline())
+    file.close()
+    
+    
+    
+    
+ normHH=defaultdict(list)
+normHV=defaultdict(list)
+normVH=defaultdict(list)
+normVV=defaultdict(list)
+normDD=defaultdict(list)
+normDA=defaultdict(list)
+normAD=defaultdict(list)
+normAA=defaultdict(list)
+for i in range (-170,180,10):
+    file = open("normfact/%d.txt"% i, "r")
+    normHH["%d"%i]=int(file.readline())
+    normHV["%d"%i]=int(file.readline())
+    normVH["%d"%i]=int(file.readline())
+    normVV["%d"%i]=int(file.readline())
+    normDD["%d"%i]=int(file.readline())
+    normDA["%d"%i]=int(file.readline())
+    normAD["%d"%i]=int(file.readline())
+    normAA["%d"%i]=int(file.readline())
+    file.close()
+
+
+
+
+
+nsingch2HH=defaultdict(list)
+nsingch4HH=defaultdict(list)
+nsingch2HV=defaultdict(list)
+nsingch4HV=defaultdict(list)
+nsingch2VH=defaultdict(list)
+nsingch4VH=defaultdict(list)
+nsingch2VV=defaultdict(list)
+nsingch4VV=defaultdict(list)
+nsingch2DD=defaultdict(list)
+nsingch4DD=defaultdict(list)
+nsingch2DA=defaultdict(list)
+nsingch4DA=defaultdict(list)
+nsingch2AD=defaultdict(list)
+nsingch4AD=defaultdict(list)
+nsingch2AA=defaultdict(list)
+nsingch4AA=defaultdict(list)
+for i in range (-170,180,10):
+    nsingch2HH["%d"%i]=singch2HH["%d"%i]/normHH["%d"%i]*10**12
+    nsingch4HH["%d"%i]=singch4HH["%d"%i]/normHH["%d"%i]*10**12
+    nsingch2HV["%d"%i]=singch2HV["%d"%i]/normHV["%d"%i]*10**12
+    nsingch4HV["%d"%i]=singch4HV["%d"%i]/normHV["%d"%i]*10**12
+    nsingch2VH["%d"%i]=singch2VH["%d"%i]/normVH["%d"%i]*10**12
+    nsingch4VH["%d"%i]=singch4VH["%d"%i]/normVH["%d"%i]*10**12
+    nsingch2VV["%d"%i]=singch2VV["%d"%i]/normVV["%d"%i]*10**12
+    nsingch4VV["%d"%i]=singch4VV["%d"%i]/normVV["%d"%i]*10**12
+    nsingch2DD["%d"%i]=singch2DD["%d"%i]/normDD["%d"%i]*10**12
+    nsingch4DD["%d"%i]=singch4DD["%d"%i]/normDD["%d"%i]*10**12
+    nsingch2DA["%d"%i]=singch2DA["%d"%i]/normDA["%d"%i]*10**12
+    nsingch4DA["%d"%i]=singch4DA["%d"%i]/normDA["%d"%i]*10**12
+    nsingch2AD["%d"%i]=singch2AD["%d"%i]/normAD["%d"%i]*10**12
+    nsingch4AD["%d"%i]=singch4AD["%d"%i]/normAD["%d"%i]*10**12
+    nsingch2AA["%d"%i]=singch2AA["%d"%i]/normAA["%d"%i]*10**12
+    nsingch4AA["%d"%i]=singch4AA["%d"%i]/normAA["%d"%i]*10**12
+    
+    
+    
+    
+    
+    
+   brightnessHH=defaultdict()
+brightnessHV=defaultdict()
+brightnessVH=defaultdict()
+brightnessVV=defaultdict()
+brightnessDD=defaultdict()
+brightnessDA=defaultdict()
+brightnessAD=defaultdict()
+brightnessAA=defaultdict()
+for i in range (-170,180,10):
+    brightnessHH["%d"%i]=normHH["%d"%i]/((normHH["%d"%i]/nsingch2HH["%d"%i])*(normHH["%d"%i]/nsingch4HH["%d"%i]))
+    brightnessHV["%d"%i]=normHV["%d"%i]/((normHV["%d"%i]/nsingch2HV["%d"%i])*(normHV["%d"%i]/nsingch4HV["%d"%i]))
+    brightnessVH["%d"%i]=normVH["%d"%i]/((normVH["%d"%i]/nsingch2VH["%d"%i])*(normVH["%d"%i]/nsingch4VH["%d"%i]))
+    brightnessVV["%d"%i]=normVV["%d"%i]/((normVV["%d"%i]/nsingch2VV["%d"%i])*(normVV["%d"%i]/nsingch4VV["%d"%i]))
+    brightnessDD["%d"%i]=normDD["%d"%i]/((normDD["%d"%i]/nsingch2DD["%d"%i])*(normDD["%d"%i]/nsingch4DD["%d"%i]))
+    brightnessDA["%d"%i]=normDA["%d"%i]/((normDA["%d"%i]/nsingch2DA["%d"%i])*(normDA["%d"%i]/nsingch4DA["%d"%i]))
+    brightnessAD["%d"%i]=normAD["%d"%i]/((normAD["%d"%i]/nsingch2AD["%d"%i])*(normAD["%d"%i]/nsingch4AD["%d"%i]))
+    brightnessAA["%d"%i]=normAA["%d"%i]/((normAA["%d"%i]/nsingch2AA["%d"%i])*(normAA["%d"%i]/nsingch4AA["%d"%i]))
+    
+    
+    
+    
+    
+   briHH=[]
+briHV=[]
+briVH=[]
+briVV=[]
+briDD=[]
+briDA=[]
+briAD=[]
+briAA=[]
+for i in range (-170,180,10):
+    briHH.append(brightnessHH["%d"%i])
+    briHV.append(brightnessHV["%d"%i])
+    briVH.append(brightnessVH["%d"%i])
+    briVV.append(brightnessVV["%d"%i])
+    briDD.append(brightnessDD["%d"%i])
+    briDA.append(brightnessDA["%d"%i])
+    briAD.append(brightnessAD["%d"%i])
+    briAA.append(brightnessAA["%d"%i])
+plt.plot (briVH)
+
+
+
+
+
+
+
+        
+        
+        
+        
+        
